@@ -1,0 +1,5 @@
+# Python binaries
+*.pyc
+
+# Database
+db.sqlite3
