@@ -8,6 +8,8 @@ class User(models.Model):
 
 class Item(models.Model):
     title=models.CharField(max_length=256)
+    description=models.CharField(max_length=1023, blank=True)
+    image_url = models.URLField(blank=True)
     score_avg = models.FloatField(
         validators=[
             MinValueValidator(-1.0),
