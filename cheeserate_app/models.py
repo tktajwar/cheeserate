@@ -21,5 +21,16 @@ class Item(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+class Rating(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.FloatField(
+        validators=[
+            MinValueValidator(-1.0),
+            MaxValueValidator(+1.0),
+        ]
+    )
+    review = models.CharField(max_length=1023, null=True, blank=True)
+
 class Film(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
