@@ -31,7 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'cheeserate_app.apps.CheeserateAppConfig',
+    'cheeserate_app',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

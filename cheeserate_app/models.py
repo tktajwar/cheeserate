@@ -7,6 +7,7 @@ class User(models.Model):
     username = models.CharField(max_length=64, unique=True)
 
 class Item(models.Model):
+    title=models.CharField(max_length=256)
     score_avg = models.FloatField(
         validators=[
             MinValueValidator(-1.0),
