@@ -7,7 +7,7 @@ class User(models.Model):
     username = models.CharField(max_length=64, unique=True)
 
 class Item(models.Model):
-    title=models.CharField(max_length=256)
+    title=models.CharField(max_length=8191,null=True,blank=True)
     description=models.CharField(max_length=1023, null=True, blank=True)
     image_url = models.URLField(null=True, blank=True)
     score_avg = models.FloatField(
