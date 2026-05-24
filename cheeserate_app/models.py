@@ -41,5 +41,14 @@ class Rating(models.Model):
     def __str__(self):
         return f"{self.user.username}'s rating of {self.item.title}"
 
-class Film(models.Model):
+class ItemCommon(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return self.item.__str__()
+
+class Film(ItemCommon):
+    pass
