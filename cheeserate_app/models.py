@@ -35,5 +35,8 @@ class Rating(models.Model):
     )
     review = models.CharField(max_length=1023, null=True, blank=True)
 
+    def __str__(self):
+        return f"{self.user.username}'s rating of {self.item.title}"
+
 class Film(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
