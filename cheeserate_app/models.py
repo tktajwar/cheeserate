@@ -10,9 +10,7 @@ class User(models.Model):
         return self.username
 
 class Item(models.Model):
-    title=models.CharField(max_length=8191,null=True,blank=True)
-    description=models.CharField(max_length=1023, null=True, blank=True)
-    image_url = models.URLField(null=True, blank=True)
+    title = models.CharField(max_length=1023,null=True,blank=True)
     score_avg = models.FloatField(
         validators=[
             MinValueValidator(-1.0),
@@ -41,8 +39,11 @@ class Rating(models.Model):
     def __str__(self):
         return f"{self.user.username}'s rating of {self.item.title}"
 
-class ItemCommon(models.Model):
+class TraktCommon(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    trakt_id = models.IntegerField(unique=True)
+    trakt_slug = models.CharField(unique=True)
+
 
     class Meta:
         abstract = True
@@ -50,5 +51,6 @@ class ItemCommon(models.Model):
     def __str__(self):
         return self.item.__str__()
 
-class Film(ItemCommon):
-    pass
+class Film(TraktCommon):
+    def get_absolute_url(self):
+        return f"films/{self.trakt_slug}"

@@ -2,6 +2,6 @@ Newest Additions:
 
 <ul>
   {% for item in latest_items %}
-  <li> <a href="item/{{item.id}}">{{item}}</a> </li>
+  <li> <a href="{{item.get_absolute_url}}">{{item}}</a> </li>
   {% endfor %}
 </ul>
