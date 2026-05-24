@@ -6,6 +6,9 @@ from django.db import models
 class User(models.Model):
     username = models.CharField(max_length=64, unique=True)
 
+    def __str__(self):
+        return self.username
+
 class Item(models.Model):
     title=models.CharField(max_length=8191,null=True,blank=True)
     description=models.CharField(max_length=1023, null=True, blank=True)
