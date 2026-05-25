@@ -151,3 +151,7 @@ class Crew(TraktCommon):
         crew.save()
 
         return crew
+
+class CrewDirectedFilm(models.Model):
+    director = models.ForeignKey(Crew, on_delete=models.CASCADE)
+    film = models.ForeignKey(Film, on_delete=models.CASCADE)
