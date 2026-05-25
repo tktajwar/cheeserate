@@ -139,7 +139,11 @@ class Crew(models.Model):
 
         params = { "extended": "images" }
 
-        response = requests.get(url, headers=headers, params=params)
+        try:
+            response = requests.get(url, headers=headers, params=params)
+        except requests.ConnectionError:
+            raise
+        response.raise_for_status()
         res = response.json()
 
         (name, birth, death, biography, trakt_slug) = (
