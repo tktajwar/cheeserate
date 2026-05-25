@@ -60,3 +60,42 @@ class Film(TraktCommon):
 
     def get_absolute_url(self):
         return f"films/{self.trakt_slug}"
+
+    @classmethod
+    def create(cls, slug: str):
+        url = f"https://api.trakt.tv/movies/{slug}/"
+
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "cheeserate/1.0.0",
+            "trakt-api-key": settings.TRAKT_API,
+            "trakt-api-version": "2",
+        }
+
+        params = { "extended": "images" }
+
+        response = requests.get(url, headers=headers, params=params)
+        res = response.json()
+
+        (title, year, trakt_slug) = (
+            res.get('title'),
+            res.get('year'),
+            res.get('ids').get('slug'),
+        )
+
+        poster_url = res.get('images').get('poster')
+        poster_url = poster_url[0] if len(poster_url) else None
+
+        item = Item ( title = f"{title} ({year})" )
+        item.save()
+
+        film = Film (
+            item=item,
+            trakt_slug=trakt_slug,
+            title=title,
+            year=year,
+            poster_url=poster_url,
+        )
+        film.save()
+
+        return film
