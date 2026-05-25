@@ -109,3 +109,45 @@ class Crew(TraktCommon):
 
     def get_absolute_url(self):
         return f"/crew/{self.trakt_slug}"
+
+    @classmethod
+    def create(cls, slug: str):
+        url = f"https://api.trakt.tv/people/{slug}/"
+
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "cheeserate/1.0.0",
+            "trakt-api-key": settings.TRAKT_API,
+            "trakt-api-version": "2",
+        }
+
+        params = { "extended": "images" }
+
+        response = requests.get(url, headers=headers, params=params)
+        res = response.json()
+
+        (name, birth, death, biography, trakt_slug) = (
+            res.get('name'),
+            res.get('birthday'),
+            res.get('death'),
+            res.get('biography'),
+            res.get('ids').get('slug'),
+        )
+
+        headshot_url = res.get('images').get('headshot')
+        headshot_url = headshot_url[0] if len(headshot_url) else None
+
+        item = Item ( title = name )
+        item.save()
+
+        crew = Crew (
+            item=item,
+            trakt_slug=trakt_slug,
+            birth=birth,
+            death=death,
+            biography=biography,
+            headshot_url=headshot_url,
+        )
+        crew.save()
+
+        return crew
