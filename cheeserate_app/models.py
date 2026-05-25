@@ -99,3 +99,13 @@ class Film(TraktCommon):
         film.save()
 
         return film
+
+class Crew(TraktCommon):
+    name = models.CharField()
+    headshot_url = models.URLField(null=True)
+    birth = models.DateField(null=True)
+    death = models.DateField(null=True)
+    biography = models.CharField(null=True)
+
+    def get_absolute_url(self):
+        return f"/crew/{self.trakt_slug}"
