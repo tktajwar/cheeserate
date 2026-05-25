@@ -59,7 +59,6 @@ class TraktCommon(models.Model):
         try:
             return cls.objects.get(trakt_slug=slug)
         except cls.DoesNotExist:
-            print(f"{slug} does not exist. Attempt to create it")
             return cls.create(slug)
 
 class Film(TraktCommon):
@@ -84,7 +83,11 @@ class Film(TraktCommon):
 
         params = { "extended": "images" }
 
-        response = requests.get(url, headers=headers, params=params)
+        try:
+            response = requests.get(url, headers=headers, params=params)
+        except requests.ConnectionError:
+            raise
+        response.raise_for_status()
         res = response.json()
 
         (title, year, trakt_slug) = (
