@@ -1,5 +1,9 @@
+from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+
+import requests
+
 
 # Create your models here.
 
@@ -41,9 +45,7 @@ class Rating(models.Model):
 
 class TraktCommon(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    trakt_id = models.IntegerField(unique=True)
     trakt_slug = models.CharField(unique=True)
-
 
     class Meta:
         abstract = True
@@ -52,5 +54,9 @@ class TraktCommon(models.Model):
         return self.item.__str__()
 
 class Film(TraktCommon):
+    title = models.CharField()
+    year = models.IntegerField()
+    poster_url = models.URLField(null=True)
+
     def get_absolute_url(self):
         return f"films/{self.trakt_slug}"
