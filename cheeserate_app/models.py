@@ -59,7 +59,7 @@ class Film(TraktCommon):
     poster_url = models.URLField(null=True)
 
     def get_absolute_url(self):
-        return f"films/{self.trakt_slug}"
+        return f"/films/{self.trakt_slug}"
 
     @classmethod
     def create(cls, slug: str):
