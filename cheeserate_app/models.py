@@ -53,6 +53,15 @@ class TraktCommon(models.Model):
     def __str__(self):
         return self.item.__str__()
 
+    @classmethod
+    def get_or_create_by_slug(cls, slug: str):
+        slug = slug.casefold()
+        try:
+            return cls.objects.get(trakt_slug=slug)
+        except cls.DoesNotExist:
+            print(f"{slug} does not exist. Attempt to create it")
+            return cls.create(slug)
+
 class Film(TraktCommon):
     title = models.CharField()
     year = models.IntegerField()
@@ -63,6 +72,7 @@ class Film(TraktCommon):
 
     @classmethod
     def create(cls, slug: str):
+        slug = slug.casefold()
         url = f"https://api.trakt.tv/movies/{slug}/"
 
         headers = {
