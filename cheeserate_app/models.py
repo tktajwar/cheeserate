@@ -100,12 +100,15 @@ class Film(TraktCommon):
 
         return film
 
-class Crew(TraktCommon):
+class Crew(models.Model):
+    trakt_slug = models.CharField(unique=True)
     name = models.CharField()
     headshot_url = models.URLField(null=True)
     birth = models.DateField(null=True)
     death = models.DateField(null=True)
     biography = models.CharField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def get_absolute_url(self):
         return f"/crew/{self.trakt_slug}"
@@ -137,11 +140,8 @@ class Crew(TraktCommon):
         headshot_url = res.get('images').get('headshot')
         headshot_url = headshot_url[0] if len(headshot_url) else None
 
-        item = Item ( title = name )
-        item.save()
-
         crew = Crew (
-            item=item,
+            name=name,
             trakt_slug=trakt_slug,
             birth=birth,
             death=death,
