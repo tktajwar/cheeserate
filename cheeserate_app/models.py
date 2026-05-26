@@ -1,9 +1,16 @@
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.utils.timezone import now
 
 import requests
 
+
+# Item update constants
+
+INITIAL_INTERVAL_HOUR = 6
+MAX_INTERVAL_HOUR = 72
+INTERVAL_MULTIPLIER = 2
 
 # Create your models here.
 
@@ -45,6 +52,8 @@ class Rating(models.Model):
 
 class TraktCommon(models.Model):
     trakt_slug = models.CharField(unique=True)
+    next_fetch = models.DateTimeField(default=now)
+    next_interval = models.IntegerField(default=INITIAL_INTERVAL_HOUR)
 
     class Meta:
         abstract = True
