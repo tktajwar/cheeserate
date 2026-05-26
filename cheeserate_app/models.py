@@ -78,7 +78,7 @@ class TraktItemCommon(TraktCommon):
 
 class Film(TraktItemCommon):
     title = models.CharField()
-    year = models.IntegerField()
+    year = models.IntegerField(null=True)
     poster_url = models.URLField(null=True)
 
     def get_absolute_url(self):
