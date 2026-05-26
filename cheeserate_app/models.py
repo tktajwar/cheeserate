@@ -78,8 +78,9 @@ class TraktItemCommon(TraktCommon):
     @staticmethod
     def get_directors(res: dict):
         return [
-            Crew.get_or_create_by_slug(
-                director.get('person').get('ids').get('slug')
+            Crew.get_or_shallow_create(
+                director.get('person').get('ids').get('slug'),
+                director.get('person').get('name'),
             ) for director in res.get('crew').get('directing')
             if 'Director' in director.get('jobs')
         ]
@@ -93,7 +94,7 @@ class Film(TraktItemCommon):
     def get_absolute_url(self):
         return f"/films/{self.trakt_slug}"
 
-    def create_directors(self):
+    def add_directors(self) -> int:
         url = f"https://api.trakt.tv/movies/{self.trakt_slug}/people"
         headers = {
             "Content-Type": "application/json",
@@ -109,11 +110,15 @@ class Film(TraktItemCommon):
         response.raise_for_status()
         res = response.json()
 
+        updated_count = 0
         for director in self.get_directors(res):
-            CrewDirectedFilm.objects.get_or_create(
+            (_, new_added) = CrewDirectedFilm.objects.get_or_create(
                 director=director,
                 film=self,
             )
+            updated_count += new_added
+
+        return updated_count
 
     @classmethod
     def create(cls, slug: str):
@@ -157,9 +162,32 @@ class Film(TraktItemCommon):
         )
         film.save()
 
-        film.create_directors()
+        film.add_directors()
 
         return film
+
+    @classmethod
+    def shallow_create(cls, trakt_slug: str, title: str, year: int):
+        item = Item ( title = f"{title} ({year})" )
+        item.save()
+
+        film = Film (
+            item=item,
+            trakt_slug=trakt_slug,
+            title=title,
+            year=year,
+        )
+        film.save()
+
+        return film
+
+    @classmethod
+    def get_or_shallow_create(cls, slug: str, title: str, year: int):
+        slug = clean_slug(slug)
+        try:
+            return cls.objects.get(trakt_slug=slug)
+        except cls.DoesNotExist:
+            return cls.shallow_create(slug, title, year)
 
 class Crew(TraktCommon):
     name = models.CharField()
@@ -216,6 +244,24 @@ class Crew(TraktCommon):
         crew.save()
 
         return crew
+
+    @classmethod
+    def shallow_create(cls, trakt_slug: str, name: str):
+        crew = Crew (
+            name=name,
+            trakt_slug=trakt_slug,
+        )
+        crew.save()
+
+        return crew
+
+    @classmethod
+    def get_or_shallow_create(cls, slug: str, name: str):
+        slug = clean_slug(slug)
+        try:
+            return cls.objects.get(trakt_slug=slug)
+        except cls.DoesNotExist:
+            return cls.shallow_create(slug, name)
 
 class CrewDirectedFilm(models.Model):
     director = models.ForeignKey(Crew, on_delete=models.CASCADE)
