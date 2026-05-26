@@ -426,6 +426,11 @@ class CrewDirectedFilm(models.Model):
     director = models.ForeignKey(Crew, on_delete=models.CASCADE)
     film = models.ForeignKey(Film, on_delete=models.CASCADE)
 
+class CrewStarringFilm(models.Model):
+    cast = models.ForeignKey(Crew, on_delete=models.CASCADE)
+    film = models.ForeignKey(Film, on_delete=models.CASCADE)
+    cast_as = models.CharField(null=True)
+
 
 # Helper functions
 
