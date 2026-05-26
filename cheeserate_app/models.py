@@ -84,7 +84,10 @@ class TraktItemCommon(TraktCommon):
     def update_if_appropriate(self) -> bool:
         updated = False
         if now() > self.next_fetch:
-            updated = bool(self.add_directors())
+            updated = bool(
+                self.add_directors() + self.update_info()
+            )
+            self.last_fetched = now()
             if updated:
                 self.next_interval = INITIAL_INTERVAL_HOUR
             else:
@@ -115,6 +118,43 @@ class Film(TraktItemCommon):
 
     def get_absolute_url(self):
         return f"/films/{self.trakt_slug}"
+
+    def update_info(self) -> bool:
+        url = f"https://api.trakt.tv/movies/{self.trakt_slug}/"
+
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "cheeserate/1.0.0",
+            "trakt-api-key": settings.TRAKT_API,
+            "trakt-api-version": "2",
+        }
+
+        params = { "extended": "images" }
+
+        try:
+            response = requests.get(url, headers=headers, params=params)
+        except requests.ConnectionError:
+            raise
+        response.raise_for_status()
+        res = response.json()
+
+        if parse_datetime(res.get('updated_at')) < self.last_fetched:
+            return False
+
+        (title, year) = (
+            res.get('title'),
+            res.get('year'),
+        )
+
+        poster_url = res.get('images').get('poster')
+        poster_url = poster_url[0] if len(poster_url) else None
+
+        self.title = title
+        self.year = year
+        self.poster_url = poster_url
+        self.save()
+
+        return True
 
     def add_directors(self) -> int:
         url = f"https://api.trakt.tv/movies/{self.trakt_slug}/people"
@@ -250,17 +290,16 @@ class Crew(TraktCommon):
             res.get('birthday'),
             res.get('death'),
             res.get('biography'),
-            res.get('ids').get('slug'),
         )
 
         headshot_url = res.get('images').get('headshot')
         headshot_url = headshot_url[0] if len(headshot_url) else None
 
-        self.name=name,
-        self.birth=birth,
-        self.death=death,
-        self.biography=biography,
-        self.headshot_url=headshot_url,
+        self.name=name
+        self.birth=birth
+        self.death=death
+        self.biography=biography
+        self.headshot_url=headshot_url
         self.save()
 
         return True
