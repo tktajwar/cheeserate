@@ -44,14 +44,10 @@ class Rating(models.Model):
         return f"{self.user.username}'s rating of {self.item.title}"
 
 class TraktCommon(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
     trakt_slug = models.CharField(unique=True)
 
     class Meta:
         abstract = True
-
-    def __str__(self):
-        return self.item.__str__()
 
     @classmethod
     def get_or_create_by_slug(cls, slug: str):
@@ -61,7 +57,16 @@ class TraktCommon(models.Model):
         except cls.DoesNotExist:
             return cls.create(slug)
 
-class Film(TraktCommon):
+class TraktItemCommon(TraktCommon):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return self.item.__str__()
+
+class Film(TraktItemCommon):
     title = models.CharField()
     year = models.IntegerField()
     poster_url = models.URLField(null=True)
@@ -113,8 +118,7 @@ class Film(TraktCommon):
 
         return film
 
-class Crew(models.Model):
-    trakt_slug = models.CharField(unique=True)
+class Crew(TraktCommon):
     name = models.CharField()
     headshot_url = models.URLField(null=True)
     birth = models.DateField(null=True)
