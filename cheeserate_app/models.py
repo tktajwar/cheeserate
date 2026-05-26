@@ -51,7 +51,7 @@ class TraktCommon(models.Model):
 
     @classmethod
     def get_or_create_by_slug(cls, slug: str):
-        slug = slug.casefold().replace(' ', '-')
+        slug = clean_slug(slug)
         try:
             return cls.objects.get(trakt_slug=slug)
         except cls.DoesNotExist:
@@ -76,7 +76,7 @@ class Film(TraktItemCommon):
 
     @classmethod
     def create(cls, slug: str):
-        slug = slug.casefold().replace(' ', '-')
+        slug = clean_slug(slug)
         url = f"https://api.trakt.tv/movies/{slug}/"
 
         headers = {
@@ -132,7 +132,7 @@ class Crew(TraktCommon):
 
     @classmethod
     def create(cls, slug: str):
-        slug = slug.casefold().replace(' ', '-')
+        slug = clean_slug(slug)
         url = f"https://api.trakt.tv/people/{slug}/"
 
         headers = {
@@ -177,3 +177,9 @@ class Crew(TraktCommon):
 class CrewDirectedFilm(models.Model):
     director = models.ForeignKey(Crew, on_delete=models.CASCADE)
     film = models.ForeignKey(Film, on_delete=models.CASCADE)
+
+
+# Helper functions
+
+def clean_slug(slug: str):
+    return slug.casefold().replace(' ', '-')
