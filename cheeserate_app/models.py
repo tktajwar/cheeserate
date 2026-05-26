@@ -66,6 +66,16 @@ class TraktItemCommon(TraktCommon):
     def __str__(self):
         return self.item.__str__()
 
+    @staticmethod
+    def get_directors(res: dict):
+        return [
+            Crew.get_or_create_by_slug(
+                director.get('person').get('ids').get('slug')
+            ) for director in res.get('crew').get('directing')
+            if 'Director' in director.get('jobs')
+        ]
+
+
 class Film(TraktItemCommon):
     title = models.CharField()
     year = models.IntegerField()
@@ -73,6 +83,28 @@ class Film(TraktItemCommon):
 
     def get_absolute_url(self):
         return f"/films/{self.trakt_slug}"
+
+    def create_directors(self):
+        url = f"https://api.trakt.tv/movies/{self.trakt_slug}/people"
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "cheeserate/1.0.0",
+            "trakt-api-key": settings.TRAKT_API,
+            "trakt-api-version": "2",
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+        except requests.ConnectionError:
+            raise
+        response.raise_for_status()
+        res = response.json()
+
+        for director in self.get_directors(res):
+            CrewDirectedFilm.objects.get_or_create(
+                director=director,
+                film=self,
+            )
 
     @classmethod
     def create(cls, slug: str):
@@ -115,6 +147,8 @@ class Film(TraktItemCommon):
             poster_url=poster_url,
         )
         film.save()
+
+        film.create_directors()
 
         return film
 
