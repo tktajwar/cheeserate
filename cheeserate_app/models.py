@@ -1,9 +1,10 @@
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now
 
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 import requests
 
 
@@ -12,6 +13,9 @@ import requests
 INITIAL_INTERVAL_HOUR = 6
 MAX_INTERVAL_HOUR = 72
 INTERVAL_MULTIPLIER = 2
+
+def ancient_time() -> datetime:
+    return datetime(1990,1,1,0,0,0, tzinfo=timezone.utc)
 
 # Create your models here.
 
@@ -53,6 +57,7 @@ class Rating(models.Model):
 
 class TraktCommon(models.Model):
     trakt_slug = models.CharField(unique=True)
+    last_fetched = models.DateTimeField(default=ancient_time)
     next_fetch = models.DateTimeField(default=now)
     next_interval = models.IntegerField(default=INITIAL_INTERVAL_HOUR)
 
@@ -218,6 +223,48 @@ class Crew(TraktCommon):
     def get_absolute_url(self):
         return f"/crew/{self.trakt_slug}"
 
+    def update_info(self) -> bool:
+        url = f"https://api.trakt.tv/people/{self.trakt_slug}/"
+
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "cheeserate/1.0.0",
+            "trakt-api-key": settings.TRAKT_API,
+            "trakt-api-version": "2",
+        }
+
+        params = { "extended": "images" }
+
+        try:
+            response = requests.get(url, headers=headers, params=params)
+        except requests.ConnectionError:
+            raise
+        response.raise_for_status()
+        res = response.json()
+
+        if parse_datetime(res.get('updated_at')) < self.last_fetched:
+            return False
+
+        (name, birth, death, biography) = (
+            res.get('name'),
+            res.get('birthday'),
+            res.get('death'),
+            res.get('biography'),
+            res.get('ids').get('slug'),
+        )
+
+        headshot_url = res.get('images').get('headshot')
+        headshot_url = headshot_url[0] if len(headshot_url) else None
+
+        self.name=name,
+        self.birth=birth,
+        self.death=death,
+        self.biography=biography,
+        self.headshot_url=headshot_url,
+        self.save()
+
+        return True
+
     def add_films(self) -> int:
         url = f"https://api.trakt.tv/people/{self.trakt_slug}/movies"
         headers = {
@@ -260,8 +307,9 @@ class Crew(TraktCommon):
         updated = False
         if now() > self.next_fetch:
             updated = bool(
-                self.add_films()
+                self.add_films() + self.update_info()
             )
+            self.last_fetched = now()
             if updated:
                 self.next_interval = INITIAL_INTERVAL_HOUR
             else:
