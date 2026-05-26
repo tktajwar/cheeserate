@@ -201,6 +201,44 @@ class Crew(TraktCommon):
     def get_absolute_url(self):
         return f"/crew/{self.trakt_slug}"
 
+    def add_films(self) -> int:
+        url = f"https://api.trakt.tv/people/{self.trakt_slug}/movies"
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "cheeserate/1.0.0",
+            "trakt-api-key": settings.TRAKT_API,
+            "trakt-api-version": "2",
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+        except requests.ConnectionError:
+            raise
+        response.raise_for_status()
+        res = response.json()
+
+        updated_count = 0
+        for movie in [
+            movie.get('movie') for movie in
+            res.get('crew').get('directing')
+            if 'Director' in movie.get('jobs')
+        ]:
+            film_slug = movie.get('ids').get('slug')
+            title = movie.get('title')
+            year = movie.get('year')
+            film = Film.get_or_shallow_create(
+                film_slug,
+                title,
+                year,
+            )
+            (_, new_added) = CrewDirectedFilm.objects.get_or_create(
+                director=self,
+                film=film,
+            )
+            updated_count += new_added
+
+        return updated_count
+
     @classmethod
     def create(cls, slug: str):
         slug = clean_slug(slug)
