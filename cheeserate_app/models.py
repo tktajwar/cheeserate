@@ -256,6 +256,23 @@ class Crew(TraktCommon):
 
         return updated_count
 
+    def update_if_appropriate(self) -> bool:
+        updated = False
+        if now() > self.next_fetch:
+            updated = bool(
+                self.add_films()
+            )
+            if updated:
+                self.next_interval = INITIAL_INTERVAL_HOUR
+            else:
+                self.next_interval = min (
+                    self.next_interval * INTERVAL_MULTIPLIER,
+                    MAX_INTERVAL_HOUR,
+                )
+            self.next_fetch = now() + timedelta(hours=self.next_interval)
+            self.save()
+        return updated
+
     @classmethod
     def create(cls, slug: str):
         slug = clean_slug(slug)
