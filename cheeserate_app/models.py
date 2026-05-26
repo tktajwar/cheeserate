@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils.timezone import now
 
+from datetime import timedelta
 import requests
 
 
@@ -74,6 +75,22 @@ class TraktItemCommon(TraktCommon):
 
     def __str__(self):
         return self.item.__str__()
+
+    def update_if_appropriate(self) -> bool:
+        updated = False
+        if now() > self.next_fetch:
+            updated = bool(self.add_directors())
+            if updated:
+                self.next_interval = INITIAL_INTERVAL_HOUR
+            else:
+                self.next_interval = min (
+                    self.next_interval * INTERVAL_MULTIPLIER,
+                    MAX_INTERVAL_HOUR,
+                )
+            self.next_fetch = now() + timedelta(hours=self.next_interval)
+            self.save()
+        return updated
+
 
     @staticmethod
     def get_directors(res: dict):
