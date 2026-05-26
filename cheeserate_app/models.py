@@ -85,7 +85,7 @@ class TraktItemCommon(TraktCommon):
         updated = False
         if now() > self.next_fetch:
             updated = bool(
-                self.add_directors() + self.update_info()
+                self.add_crews() + self.update_info()
             )
             self.last_fetched = now()
             if updated:
@@ -102,12 +102,24 @@ class TraktItemCommon(TraktCommon):
 
     @staticmethod
     def get_directors(res: dict):
+        directing = res.get('crew').get('directing')
+        if directing is None:
+            return [ ]
         return [
             Crew.get_or_shallow_create(
                 director.get('person').get('ids').get('slug'),
                 director.get('person').get('name'),
-            ) for director in res.get('crew').get('directing')
+            ) for director in directing
             if 'Director' in director.get('jobs')
+        ]
+
+    @staticmethod
+    def get_casts(res: dict):
+        return [
+            (Crew.get_or_shallow_create(
+                cast.get('person').get('ids').get('slug'),
+                cast.get('person').get('name'),
+            ), cast.get('characters')) for cast in res.get('cast')
         ]
 
 
@@ -156,7 +168,7 @@ class Film(TraktItemCommon):
 
         return True
 
-    def add_directors(self) -> int:
+    def add_crews(self) -> int:
         url = f"https://api.trakt.tv/movies/{self.trakt_slug}/people"
         headers = {
             "Content-Type": "application/json",
@@ -179,6 +191,15 @@ class Film(TraktItemCommon):
                 film=self,
             )
             updated_count += new_added
+
+        for (cast, cast_as) in self.get_casts(res):
+            for character in cast_as:
+                (_, new_added) = CrewStarringFilm.objects.get_or_create(
+                    cast=cast,
+                    film=self,
+                    cast_as=character,
+                )
+                updated_count += new_added
 
         return updated_count
 
@@ -224,7 +245,7 @@ class Film(TraktItemCommon):
         )
         film.save()
 
-        film.add_directors()
+        film.add_crews()
 
         return film
 
@@ -321,24 +342,46 @@ class Crew(TraktCommon):
         res = response.json()
 
         updated_count = 0
-        for movie in [
-            movie.get('movie') for movie in
-            res.get('crew').get('directing')
+
+        directing = res.get('crew').get('directing')
+        if directing:
+            for movie in [
+                    movie.get('movie') for movie in directing
             if 'Director' in movie.get('jobs')
+            ]:
+                film_slug = movie.get('ids').get('slug')
+                title = movie.get('title')
+                year = movie.get('year')
+                film = Film.get_or_shallow_create(
+                    film_slug,
+                    title,
+                    year,
+                )
+                (_, new_added) = CrewDirectedFilm.objects.get_or_create(
+                    director=self,
+                    film=film,
+                )
+                updated_count += new_added
+
+        for (movie, characters) in [
+                (movie.get('movie'), movie.get('characters'))
+                for movie in res.get('cast')
         ]:
-            film_slug = movie.get('ids').get('slug')
-            title = movie.get('title')
-            year = movie.get('year')
-            film = Film.get_or_shallow_create(
-                film_slug,
-                title,
-                year,
-            )
-            (_, new_added) = CrewDirectedFilm.objects.get_or_create(
-                director=self,
-                film=film,
-            )
-            updated_count += new_added
+            for character in characters:
+                film_slug = movie.get('ids').get('slug')
+                title = movie.get('title')
+                year = movie.get('year')
+                film = Film.get_or_shallow_create(
+                    film_slug,
+                    title,
+                    year,
+                )
+                (_, new_added) = CrewStarringFilm.objects.get_or_create(
+                    cast=self,
+                    film=film,
+                    cast_as=characters,
+                )
+                updated_count += new_added
 
         return updated_count
 
