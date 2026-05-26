@@ -215,5 +215,5 @@ class CrewDirectedFilm(models.Model):
 
 # Helper functions
 
-def clean_slug(slug: str):
+def clean_slug(slug: str) -> str:
     return slug.casefold().replace(' ', '-')
