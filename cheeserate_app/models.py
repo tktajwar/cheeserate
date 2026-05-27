@@ -74,6 +74,9 @@ class TraktCommon(models.Model):
 
 class TraktItemCommon(TraktCommon):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    title = models.CharField()
+    year = models.IntegerField(null=True)
+    poster_url = models.URLField(null=True)
 
     class Meta:
         abstract = True
@@ -99,6 +102,28 @@ class TraktItemCommon(TraktCommon):
             self.save()
         return updated
 
+    @classmethod
+    def shallow_create(cls, trakt_slug: str, title: str, year: int):
+        item = Item ( title = f"{title} ({year})" )
+        item.save()
+
+        item = cls (
+            item=item,
+            trakt_slug=trakt_slug,
+            title=title,
+            year=year,
+        )
+        item.save()
+
+        return item
+
+    @classmethod
+    def get_or_shallow_create(cls, slug: str, title: str, year: int):
+        slug = clean_slug(slug)
+        try:
+            return cls.objects.get(trakt_slug=slug)
+        except cls.DoesNotExist:
+            return cls.shallow_create(slug, title, year)
 
     @staticmethod
     def get_directors(res: dict):
@@ -124,10 +149,6 @@ class TraktItemCommon(TraktCommon):
 
 
 class Film(TraktItemCommon):
-    title = models.CharField()
-    year = models.IntegerField(null=True)
-    poster_url = models.URLField(null=True)
-
     def get_absolute_url(self):
         return f"/films/{self.trakt_slug}"
 
@@ -248,29 +269,6 @@ class Film(TraktItemCommon):
         film.add_crews()
 
         return film
-
-    @classmethod
-    def shallow_create(cls, trakt_slug: str, title: str, year: int):
-        item = Item ( title = f"{title} ({year})" )
-        item.save()
-
-        film = Film (
-            item=item,
-            trakt_slug=trakt_slug,
-            title=title,
-            year=year,
-        )
-        film.save()
-
-        return film
-
-    @classmethod
-    def get_or_shallow_create(cls, slug: str, title: str, year: int):
-        slug = clean_slug(slug)
-        try:
-            return cls.objects.get(trakt_slug=slug)
-        except cls.DoesNotExist:
-            return cls.shallow_create(slug, title, year)
 
 class Crew(TraktCommon):
     name = models.CharField()
