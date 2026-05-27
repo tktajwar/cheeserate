@@ -134,6 +134,7 @@ class TraktItemCommon(TraktCommon):
             Crew.get_or_shallow_create(
                 director.get('person').get('ids').get('slug'),
                 director.get('person').get('name'),
+                (director.get('images').get('headshot') or [None])[0],
             ) for director in directing
             if 'Director' in director.get('jobs')
         ]
@@ -144,6 +145,7 @@ class TraktItemCommon(TraktCommon):
             (Crew.get_or_shallow_create(
                 cast.get('person').get('ids').get('slug'),
                 cast.get('person').get('name'),
+                (cast.get('images').get('headshot') or [None])[0],
             ), cast.get('characters')) for cast in res.get('cast')
         ]
 
@@ -446,22 +448,23 @@ class Crew(TraktCommon):
         return crew
 
     @classmethod
-    def shallow_create(cls, trakt_slug: str, name: str):
-        crew = Crew (
+    def shallow_create(cls, trakt_slug: str, name: str, headshot_url: str):
+        crew = cls (
             name=name,
             trakt_slug=trakt_slug,
+            headshot_url=headshot_url,
         )
         crew.save()
 
         return crew
 
     @classmethod
-    def get_or_shallow_create(cls, slug: str, name: str):
+    def get_or_shallow_create(cls, slug: str, name: str, headshot_url: str):
         slug = clean_slug(slug)
         try:
             return cls.objects.get(trakt_slug=slug)
         except cls.DoesNotExist:
-            return cls.shallow_create(slug, name)
+            return cls.shallow_create(slug, name, headshot_url)
 
 class CrewDirectedFilm(models.Model):
     director = models.ForeignKey(Crew, on_delete=models.CASCADE)
