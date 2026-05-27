@@ -11,7 +11,7 @@ import requests
 # Item update constants
 
 INITIAL_INTERVAL_HOUR = 6
-MAX_INTERVAL_HOUR = 72
+MAX_INTERVAL_HOUR = 576
 INTERVAL_MULTIPLIER = 2
 
 def ancient_time() -> datetime:
