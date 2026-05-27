@@ -77,6 +77,7 @@ class TraktItemCommon(TraktCommon):
     title = models.CharField()
     year = models.IntegerField(null=True)
     poster_url = models.URLField(null=True)
+    overview = models.CharField(null=True)
 
     class Meta:
         abstract = True
@@ -189,9 +190,10 @@ class Film(TraktItemCommon):
         if parse_datetime(res.get('updated_at')) < self.last_fetched:
             return False
 
-        (title, year) = (
+        (title, year, overview) = (
             res.get('title'),
             res.get('year'),
+            res.get('overview'),
         )
 
         poster_url = res.get('images').get('poster')
@@ -199,6 +201,7 @@ class Film(TraktItemCommon):
 
         self.title = title
         self.year = year
+        self.overview = overview
         self.poster_url = poster_url
         self.save()
 
