@@ -103,7 +103,13 @@ class TraktItemCommon(TraktCommon):
         return updated
 
     @classmethod
-    def shallow_create(cls, trakt_slug: str, title: str, year: int):
+    def shallow_create(
+            cls,
+            trakt_slug: str,
+            title: str,
+            year: int,
+            poster_url: str,
+    ):
         item = Item ( title = f"{title} ({year})" )
         item.save()
 
@@ -112,18 +118,25 @@ class TraktItemCommon(TraktCommon):
             trakt_slug=trakt_slug,
             title=title,
             year=year,
+            poster_url=poster_url,
         )
         item.save()
 
         return item
 
     @classmethod
-    def get_or_shallow_create(cls, slug: str, title: str, year: int):
+    def get_or_shallow_create(
+            cls,
+            slug: str,
+            title: str,
+            year: int,
+            poster_url: str,
+    ):
         slug = clean_slug(slug)
         try:
             return cls.objects.get(trakt_slug=slug)
         except cls.DoesNotExist:
-            return cls.shallow_create(slug, title, year)
+            return cls.shallow_create(slug, title, year, poster_url)
 
     @staticmethod
     def get_directors(res: dict):
@@ -333,9 +346,10 @@ class Crew(TraktCommon):
             "trakt-api-key": settings.TRAKT_API,
             "trakt-api-version": "2",
         }
+        params = { "extended": "images" }
 
         try:
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, params=params)
         except requests.ConnectionError:
             raise
         response.raise_for_status()
@@ -352,10 +366,12 @@ class Crew(TraktCommon):
                 film_slug = movie.get('ids').get('slug')
                 title = movie.get('title')
                 year = movie.get('year')
+                poster_url = (movie.get('images').get('poster') or [None])[0]
                 film = Film.get_or_shallow_create(
                     film_slug,
                     title,
                     year,
+                    poster_url,
                 )
                 (_, new_added) = CrewDirectedFilm.objects.get_or_create(
                     director=self,
@@ -367,15 +383,18 @@ class Crew(TraktCommon):
                 (movie.get('movie'), movie.get('characters'))
                 for movie in res.get('cast')
         ]:
+            film_slug = movie.get('ids').get('slug')
+            title = movie.get('title')
+            year = movie.get('year')
+            poster_url = (movie.get('images').get('poster') or [None])[0]
+            film = Film.get_or_shallow_create(
+                film_slug,
+                title,
+                year,
+                poster_url,
+            )
+
             for character in characters:
-                film_slug = movie.get('ids').get('slug')
-                title = movie.get('title')
-                year = movie.get('year')
-                film = Film.get_or_shallow_create(
-                    film_slug,
-                    title,
-                    year,
-                )
                 (_, new_added) = CrewStarringFilm.objects.get_or_create(
                     cast=self,
                     film=film,
