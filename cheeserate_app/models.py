@@ -281,7 +281,7 @@ class Film(TraktItemCommon):
         )
         film.save()
 
-        film.add_crews()
+        film.update_if_appropriate()
 
         return film
 
