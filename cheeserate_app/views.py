@@ -17,6 +17,8 @@ def root(request):
 def film(request, film_slug):
     try:
         film = Film.get_or_create_by_slug(film_slug)
+        directors = Crew.objects.filter(crewdirectedfilm__film=film)
+        casts = Crew.objects.filter(crewstarringfilm__film=film)
     except HTTPError as e:
         if e.response.status_code == 404:
             raise Http404("Film does not exist")
@@ -26,7 +28,16 @@ def film(request, film_slug):
     except ConnectionError as e:
         print(e)
         return HttpResponseServerError("Connection error. API call failed.")
-    return HttpResponse("You're watching %s." % film.item.title)
+    try:
+        print(film.update_if_appropriate())
+    except ConnectionError:
+        pass
+    context = {
+        "film": film,
+        "directors": directors,
+        "casts": casts,
+    }
+    return render(request, "cheeserate/film_slug.html", context)
 
 def crew(request, crew_slug):
     try:

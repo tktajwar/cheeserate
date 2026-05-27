@@ -1,0 +1,32 @@
+{% if film.poster_url %}
+<div>
+  <img src="https://{{film.poster_url}}" class="w-full">
+</div>
+{% endif %}
+
+<h1>
+  {{film.title}}
+</h1>
+
+<div>
+  {% if film.year %}
+  <span>{{ film.year }}</span>
+  {% endif %}
+  Directed by
+  {% for director in directors %}
+  <a href="{% url 'crew' director.trakt_slug %}">{{director.name}}</a>
+  {% endfor %}
+</div>
+
+<div>
+  Starring
+  {% for cast in casts %}
+  <a href="{% url 'crew' cast.trakt_slug %}">{{cast.name}}</a>
+  {% endfor %}
+</div>
+
+{% if film.overview %}
+<div>
+  {{film.overview}}
+</div>
+{% endif %}
