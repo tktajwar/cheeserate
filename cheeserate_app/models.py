@@ -464,6 +464,8 @@ class Crew(TraktCommon):
         )
         crew.save()
 
+        crew.update_if_appropriate()
+
         return crew
 
     @classmethod
