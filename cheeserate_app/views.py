@@ -2,6 +2,8 @@ from django.http import Http404, HttpResponseServerError
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.template import loader
+from django.urls import reverse
+from django.utils.html import format_html
 
 from requests import ConnectionError, HTTPError
 
@@ -19,6 +21,22 @@ def film(request, film_slug):
         film = Film.get_or_create_by_slug(film_slug)
         directors = Crew.objects.filter(crewdirectedfilm__film=film)
         casts = Crew.objects.filter(crewstarringfilm__film=film)
+        directors = ', '.join([
+            format_html(
+                '<a href="{}" class="underline">{}</a>',
+                reverse('crew', args=[crew.trakt_slug]),
+                crew.name,
+            )
+            for crew in directors
+        ])
+        casts = ', '.join([
+            format_html(
+                '<a href="{}" class="underline">{}</a>',
+                reverse('crew', args=[crew.trakt_slug]),
+                crew.name,
+            )
+            for crew in casts
+        ])
     except HTTPError as e:
         if e.response.status_code == 404:
             raise Http404("Film does not exist")

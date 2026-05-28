@@ -1,32 +1,51 @@
-{% if film.poster_url %}
-<div>
-  <img src="https://{{film.poster_url}}" class="w-full">
-</div>
-{% endif %}
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
-<h1>
-  {{film.title}}
-</h1>
+<div id="page-wrapper"
+     class="grid grid-cols-5 gap-5 max-w-4xl m-auto">
+  <div id="poster-col" class="col-span-2">
+    {% if film.poster_url %}
+    <figure class="w-full">
+      <img src="https://{{film.poster_url}}"
+	   class="
+		  w-full rounded-md
+		  shadow-md
+		  ">
+    </figure>
+    {% endif %}
+  </div>
 
-<div>
-  {% if film.year %}
-  <span>{{ film.year }}</span>
-  {% endif %}
-  Directed by
-  {% for director in directors %}
-  <a href="{% url 'crew' director.trakt_slug %}">{{director.name}}</a>
-  {% endfor %}
-</div>
+  <div id="information-col" class="col-span-3">
+    <section id="item-details">
+      <h1 class="text-3xl">
+	{{film.title}}
+      </h1>
 
-<div>
-  Starring
-  {% for cast in casts %}
-  <a href="{% url 'crew' cast.trakt_slug %}">{{cast.name}}</a>
-  {% endfor %}
-</div>
+      {% if film.year %}
+      <span>{{ film.year }}</span>
+      {% endif %}
+      {% if directors %}
+      <span id="directors-list">
+	Directed by {{directors|safe}}
+      </span>
+      {% endif %}
 
-{% if film.overview %}
-<div>
-  {{film.overview}}
+      {% if film.overview %}
+      <p id="overview">
+	{{film.overview}}
+      </p>
+      {% endif %}
+    </section>
+
+    {% if casts %}
+    <section id="cast-list">
+      <h2 class="text-2xl">
+	Starring
+      </h2>
+      <p>
+	{{casts|safe}}
+      </p>
+      </section>
+    </section>
+    {% endif %}
+  </div>
 </div>
-{% endif %}
