@@ -401,7 +401,7 @@ class Crew(TraktCommon):
                 (_, new_added) = CrewStarringFilm.objects.get_or_create(
                     cast=self,
                     film=film,
-                    cast_as=characters,
+                    cast_as=character,
                 )
                 updated_count += new_added
 
