@@ -21,22 +21,6 @@ def film(request, film_slug):
         film = Film.get_or_create_by_slug(film_slug)
         directors = Crew.objects.filter(crewdirectedfilm__film=film)
         casts = Crew.objects.filter(crewstarringfilm__film=film)
-        directors = ', '.join([
-            format_html(
-                '<a href="{}" class="underline">{}</a>',
-                reverse('crew', args=[crew.trakt_slug]),
-                crew.name,
-            )
-            for crew in directors
-        ])
-        casts = ', '.join([
-            format_html(
-                '<a href="{}" class="underline">{}</a>',
-                reverse('crew', args=[crew.trakt_slug]),
-                crew.name,
-            )
-            for crew in casts
-        ])
     except HTTPError as e:
         if e.response.status_code == 404:
             raise Http404("Film does not exist")
@@ -50,6 +34,22 @@ def film(request, film_slug):
         print(film.update_if_appropriate())
     except ConnectionError:
         pass
+    directors = ', '.join([
+        format_html(
+            '<a href="{}" class="underline">{}</a>',
+            reverse('crew', args=[crew.trakt_slug]),
+            crew.name,
+        )
+            for crew in directors
+    ])
+    casts = ', '.join([
+        format_html(
+            '<a href="{}" class="underline">{}</a>',
+            reverse('crew', args=[crew.trakt_slug]),
+            crew.name,
+        )
+            for crew in casts
+    ])
     context = {
         "film": film,
         "directors": directors,
