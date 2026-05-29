@@ -1,8 +1,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
 <div id="page-wrapper"
-     class="grid grid-cols-8 gap-8 max-w-4xl m-auto px-4">
-  <div id="poster-col" class="col-span-3">
+     class="grid grid-cols-8 gap-8 max-w-4xl m-auto p-4">
+  <div id="profile-col" class="col-span-3">
     {% if crew.headshot_url %}
     <figure class="w-full">
       <img src="https://{{crew.headshot_url}}"
@@ -12,20 +12,20 @@
 		  ">
     </figure>
     {% endif %}
-  </div>
 
-  <div id="information-col" class="col-span-5">
     <section id="crew-details">
-      <h1 class="text-3xl">
+      <h1 class="text-3xl text-center">
 	{{crew.name}}
       </h1>
 
-      {% if crew.birth %}
-      <span>{{ crew.birth }}</span>
-      {% endif %}
-      {% if crew.death %}
-      <span> - {{ crew.death }}</span>
-      {% endif %}
+      <p class="text-center">
+	{% if crew.birth %}
+	<span>{{ crew.birth }}</span>
+	{% endif %}
+	{% if crew.death %}
+	<span> - {{ crew.death }}</span>
+	{% endif %}
+      </p>
 
       {% if crew.biography %}
       <p id="biography" class="text-justify">
@@ -34,28 +34,32 @@
       {% endif %}
     </section>
   </div>
-</div>
 
-<div class="max-w-4xl m-auto px-4">
-  {% if directing %}
-  <section id="starring-list">
-    <h2 class="text-2xl">
-      Films directed by {{crew.name}}
-    </h2>
-    <p>
-      {{directing|safe}}
-    </p>
-  </section>
-  {% endif %}
+  <div id="discography-col" class="col-span-5">
 
-  {% if starring %}
-  <section id="starring-list">
-    <h2 class="text-2xl">
-      Films starring {{crew.name}}
-    </h2>
-    <p>
-      {{starring|safe}}
-    </p>
-  </section>
-  {% endif %}
+    <div class="max-w-4xl m-auto px-4">
+      {% if directing %}
+      <section id="starring-list">
+	<h2 class="text-2xl">
+	  Films directed by {{crew.name}}
+	</h2>
+	<p>
+	  {{directing|safe}}
+	</p>
+      </section>
+      {% endif %}
+
+      {% if starring %}
+      <section id="starring-list">
+	<h2 class="text-2xl">
+	  Films starring {{crew.name}}
+	</h2>
+	<p>
+	  {{starring|safe}}
+	</p>
+      </section>
+      {% endif %}
+    </div>
+
+  </div>
 </div>
