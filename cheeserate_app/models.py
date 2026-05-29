@@ -213,11 +213,10 @@ class Film(TraktItemCommon):
         CrewDirectedFilm.bulk_create(targets)
 
         targets = [ ]
-        for characters in self.get_casts(res):
-            for character in characters:
-                targets.append(
-                    (cast, self)
-                )
+        for cast in self.get_casts(res):
+            targets.append(
+                (cast, self)
+            )
         CrewStarringFilm.bulk_create(targets)
 
         return False
@@ -353,34 +352,26 @@ class Crew(TraktCommon):
         response.raise_for_status()
         res = response.json()
 
-        updated_count = 0
+        directing = res.get('crew').get('directing') or []
+        targets = [ ]
+        for movie_dir in directing:
+            if 'Director' not in movie_dir.get('jobs'):
+                continue
+            movie = movie_dir.get('movie')
+            film_slug = movie.get('ids').get('slug')
+            title = movie.get('title')
+            year = movie.get('year')
+            poster_url = (movie.get('images').get('poster') or [None])[0]
+            targets.append(
+                (film_slug, title, year, poster_url)
+            )
+        films = Film.bulk_get_or_shallow_create(targets)
+        targets = [ (self, film) for film in films ]
+        CrewDirectedFilm.bulk_create(targets)
 
-        directing = res.get('crew').get('directing')
-        if directing:
-            for movie in [
-                    movie.get('movie') for movie in directing
-            if 'Director' in movie.get('jobs')
-            ]:
-                film_slug = movie.get('ids').get('slug')
-                title = movie.get('title')
-                year = movie.get('year')
-                poster_url = (movie.get('images').get('poster') or [None])[0]
-                film = Film.get_or_shallow_create(
-                    film_slug,
-                    title,
-                    year,
-                    poster_url,
-                )
-                (_, new_added) = CrewDirectedFilm.objects.get_or_create(
-                    director=self,
-                    film=film,
-                )
-                updated_count += new_added
-
-        for (movie, characters) in [
-                (movie.get('movie'), movie.get('characters'))
-                for movie in res.get('cast')
-        ]:
+        targets = [ ]
+        for movie_dir in  res.get('cast'):
+            movie = movie_dir.get('movie')
             film_slug = movie.get('ids').get('slug')
             title = movie.get('title')
             year = movie.get('year')
@@ -391,16 +382,14 @@ class Crew(TraktCommon):
                 year,
                 poster_url,
             )
+            targets.append(
+                (film_slug, title, year, poster_url)
+            )
+        films = Film.bulk_get_or_shallow_create(targets)
+        targets = [ (self, film) for film in films ]
+        CrewStarringFilm.bulk_create(targets)
 
-            for character in characters:
-                (_, new_added) = CrewStarringFilm.objects.get_or_create(
-                    cast=self,
-                    film=film,
-                    cast_as=character,
-                )
-                updated_count += new_added
-
-        return updated_count
+        return False
 
     def update_if_appropriate(self) -> bool:
         updated = False
@@ -497,8 +486,7 @@ class Crew(TraktCommon):
             ignore_conflicts=True,
         )
         slugs = [ slug for (slug, _, _) in targets ]
-        ordering = Case(*[When(name=v, then=pos) for pos,v in enumerate(slugs)])
-        return cls.objects.filter(trakt_slug__in=slugs).order_by(ordering)
+        return cls.objects.filter(trakt_slug__in=slugs)
 
 class CrewDirectedFilm(models.Model):
     director = models.ForeignKey(Crew, on_delete=models.CASCADE)
