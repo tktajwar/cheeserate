@@ -509,11 +509,25 @@ class CrewDirectedFilm(models.Model):
     director = models.ForeignKey(Crew, on_delete=models.CASCADE)
     film = models.ForeignKey(Film, on_delete=models.CASCADE)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['director', 'film'],
+                name='unique_directing'
+            ),
+        ]
 class CrewStarringFilm(models.Model):
     cast = models.ForeignKey(Crew, on_delete=models.CASCADE)
     film = models.ForeignKey(Film, on_delete=models.CASCADE)
     cast_as = models.CharField(null=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['cast', 'film', 'cast_as'],
+                name='unique_casting'
+            ),
+        ]
 
 # Helper functions
 
