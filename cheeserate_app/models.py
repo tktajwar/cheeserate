@@ -490,6 +490,21 @@ class Crew(TraktCommon):
         except cls.DoesNotExist:
             return cls.shallow_create(slug, name, headshot_url)
 
+    @classmethod
+    def bulk_get_or_shallow_create(cls, targets: list):
+        objs = [ ]
+        for (slug, name, headshot_url) in targets:
+            objs.append(
+                cls(trakt_slug=slug, name=name, headshot_url=headshot_url)
+            )
+        cls.objects.bulk_create(
+            objs,
+            ignore_conflicts=True,
+        )
+        slugs = [ slug for (slug, _, _) in targets ]
+        ordering = Case(*[When(name=v, then=pos) for pos,v in enumerate(slugs)])
+        return cls.objects.filter(trakt_slug__in=slugs).order_by(ordering)
+
 class CrewDirectedFilm(models.Model):
     director = models.ForeignKey(Crew, on_delete=models.CASCADE)
     film = models.ForeignKey(Film, on_delete=models.CASCADE)
