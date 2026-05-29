@@ -545,6 +545,23 @@ class CrewStarringFilm(models.Model):
             ),
         ]
 
+    @classmethod
+    def bulk_create(cls, targets: list):
+        objs = [ ]
+        for (cast, film, character) in targets:
+            objs.append(
+                cls (
+                    cast = cast,
+                    film = film,
+                    cast_as = character,
+                )
+            )
+        cls.objects.bulk_create(
+            objs,
+            ignore_conflicts=True,
+        )
+
+
 # Helper functions
 
 def clean_slug(slug: str) -> str:
