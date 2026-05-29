@@ -60,6 +60,12 @@ def film(request, film_slug):
 def crew(request, crew_slug):
     try:
         crew = Crew.get_or_create_by_slug(crew_slug)
+        directed_films = Film.objects.filter(
+            crewdirectedfilm__director=crew
+        ).distinct()
+        starring_films = Film.objects.filter(
+            crewstarringfilm__cast=crew
+        ).distinct()
     except HTTPError as e:
         if e.response.status_code == 404:
             raise Http404("Crew does not exist")
@@ -69,4 +75,29 @@ def crew(request, crew_slug):
     except ConnectionError as e:
         print(e)
         return HttpResponseServerError("Connection error. API call failed.")
-    return HttpResponse("You're looking for %s." % crew.name)
+    try:
+        print(crew.update_if_appropriate())
+    except ConnectionError:
+        pass
+    directing = ', '.join([
+        format_html(
+            '<a href="{}" class="underline">{}</a>',
+            reverse('film', args=[film.trakt_slug]),
+            str(film),
+        )
+            for film in directed_films
+    ])
+    starring = ', '.join([
+        format_html(
+            '<a href="{}" class="underline">{}</a>',
+            reverse('film', args=[film.trakt_slug]),
+            str(film),
+        )
+            for film in starring_films
+    ])
+    context = {
+        "crew": crew,
+        "directing": directing,
+        "starring": starring,
+    }
+    return render(request, "cheeserate/crew_slug.html", context)
