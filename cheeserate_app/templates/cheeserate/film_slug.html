@@ -2,7 +2,7 @@
 
 <div id="page-wrapper"
      class="grid grid-cols-8 gap-8 max-w-4xl m-auto px-4">
-  <div id="poster-col" class="col-span-3">
+  <div id="details-col" class="col-span-3">
     {% if film.poster_url %}
     <figure class="w-full">
       <img src="https://{{film.poster_url}}"
@@ -12,9 +12,6 @@
 		  ">
     </figure>
     {% endif %}
-  </div>
-
-  <div id="information-col" class="col-span-5">
     <section id="item-details">
       <h1 class="text-3xl">
 	{{film.title}}
@@ -35,7 +32,9 @@
       </p>
       {% endif %}
     </section>
+  </div>
 
+  <div id="crew-col" class="col-span-5">
     {% if casts %}
     <section id="cast-list">
       <h2 class="text-2xl">
@@ -44,7 +43,6 @@
       <p>
 	{{casts|safe}}
       </p>
-      </section>
     </section>
     {% endif %}
   </div>
