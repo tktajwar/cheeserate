@@ -264,6 +264,25 @@ class Film(TraktItemCommon):
 
         return film
 
+    @classmethod
+    def bulk_get_or_shallow_create(cls, targets: list):
+        objs = [ ]
+        for (slug, title, year, poster_url) in targets:
+            objs.append(
+                cls (
+                    trakt_slug=slug,
+                    title=title,
+                    year=year,
+                    poster_url=poster_url,
+                )
+            )
+        cls.objects.bulk_create(
+            objs,
+            ignore_conflicts=True,
+        )
+        slugs = [ slug for (slug, _, _, _) in targets ]
+        return cls.objects.filter(trakt_slug__in=slugs)
+
 class Crew(TraktCommon):
     name = models.CharField()
     headshot_url = models.URLField(null=True)
