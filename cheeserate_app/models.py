@@ -26,8 +26,7 @@ class User(models.Model):
     def __str__(self):
         return self.username
 
-class Item(models.Model):
-    title = models.CharField(max_length=1023,null=True,blank=True)
+class ItemCommon(models.Model):
     score_avg = models.FloatField(
         validators=[
             MinValueValidator(-1.0),
@@ -39,22 +38,8 @@ class Item(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.title
-
-class Rating(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    rating = models.FloatField(
-        validators=[
-            MinValueValidator(-1.0),
-            MaxValueValidator(+1.0),
-        ]
-    )
-    review = models.CharField(max_length=1023, null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.user.username}'s rating of {self.item.title}"
+    class Meta:
+        abstract = True
 
 class TraktCommon(models.Model):
     trakt_slug = models.CharField(unique=True)
@@ -73,8 +58,7 @@ class TraktCommon(models.Model):
         except cls.DoesNotExist:
             return cls.create(slug)
 
-class TraktItemCommon(TraktCommon):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+class TraktItemCommon(TraktCommon, ItemCommon):
     title = models.CharField()
     year = models.IntegerField(null=True)
     poster_url = models.URLField(null=True)
@@ -84,7 +68,7 @@ class TraktItemCommon(TraktCommon):
         abstract = True
 
     def __str__(self):
-        return self.item.__str__()
+        return self.title
 
     def update_if_appropriate(self) -> bool:
         updated = False
@@ -112,11 +96,8 @@ class TraktItemCommon(TraktCommon):
             year: int,
             poster_url: str,
     ):
-        item = Item ( title = f"{title} ({year})" )
-        item.save()
 
         item = cls (
-            item=item,
             trakt_slug=trakt_slug,
             title=title,
             year=year,
@@ -284,11 +265,7 @@ class Film(TraktItemCommon):
         poster_url = res.get('images').get('poster')
         poster_url = poster_url[0] if len(poster_url) else None
 
-        item = Item ( title = f"{title} ({year})" )
-        item.save()
-
         film = Film (
-            item=item,
             trakt_slug=trakt_slug,
             title=title,
             year=year,
