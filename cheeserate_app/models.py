@@ -516,6 +516,22 @@ class CrewDirectedFilm(models.Model):
                 name='unique_directing'
             ),
         ]
+
+    @classmethod
+    def bulk_create(cls, targets: list):
+        objs = [ ]
+        for (director, film) in targets:
+            objs.append(
+                cls (
+                    director = director,
+                    film = film,
+                )
+            )
+        cls.objects.bulk_create(
+            objs,
+            ignore_conflicts=True,
+        )
+
 class CrewStarringFilm(models.Model):
     cast = models.ForeignKey(Crew, on_delete=models.CASCADE)
     film = models.ForeignKey(Film, on_delete=models.CASCADE)
