@@ -68,7 +68,7 @@ class TraktItemCommon(TraktCommon, ItemCommon):
         abstract = True
 
     def __str__(self):
-        return self.title
+        return f"{self.title} ({self.year})"
 
     def update_if_appropriate(self) -> bool:
         updated = False
@@ -290,6 +290,9 @@ class Crew(TraktCommon):
     biography = models.CharField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
 
     def get_absolute_url(self):
         return f"/crew/{self.trakt_slug}"
