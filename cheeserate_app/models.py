@@ -144,20 +144,7 @@ class TraktItemCommon(TraktCommon, ItemCommon):
                 (cast.get('images').get('headshot') or [None])[0],
             ) for cast in casts
         ]
-        crews = Crew.bulk_get_or_shallow_create(targets)
-        crews_dict = { }
-        for crew in crews:
-            crews_dict[crew.trakt_slug] = crew
-        cast_characters = [
-            (
-                cast.get('person').get('ids').get('slug'),
-                cast.get('characters')
-            ) for cast in res.get('cast')
-        ]
-        return [
-            (crews_dict[slug], character)
-            for (slug, character) in cast_characters
-        ]
+        return Crew.bulk_get_or_shallow_create(targets)
 
 class Film(TraktItemCommon):
     def get_absolute_url(self):
@@ -226,10 +213,10 @@ class Film(TraktItemCommon):
         CrewDirectedFilm.bulk_create(targets)
 
         targets = [ ]
-        for (cast, characters) in self.get_casts(res):
+        for characters in self.get_casts(res):
             for character in characters:
                 targets.append(
-                    (cast, self, character)
+                    (cast, self)
                 )
         CrewStarringFilm.bulk_create(targets)
 
@@ -524,12 +511,11 @@ class CrewDirectedFilm(models.Model):
 class CrewStarringFilm(models.Model):
     cast = models.ForeignKey(Crew, on_delete=models.CASCADE)
     film = models.ForeignKey(Film, on_delete=models.CASCADE)
-    cast_as = models.CharField(null=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['cast', 'film', 'cast_as'],
+                fields=['cast', 'film'],
                 name='unique_casting'
             ),
         ]
@@ -537,12 +523,11 @@ class CrewStarringFilm(models.Model):
     @classmethod
     def bulk_create(cls, targets: list):
         objs = [ ]
-        for (cast, film, character) in targets:
+        for (cast, film) in targets:
             objs.append(
                 cls (
                     cast = cast,
                     film = film,
-                    cast_as = character,
                 )
             )
         cls.objects.bulk_create(
