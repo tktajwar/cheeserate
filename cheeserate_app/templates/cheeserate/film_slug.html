@@ -1,8 +1,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
 <div id="page-wrapper"
-     class="grid grid-cols-5 gap-5 max-w-4xl m-auto">
-  <div id="poster-col" class="col-span-2">
+     class="grid grid-cols-8 gap-8 max-w-4xl m-auto">
+  <div id="poster-col" class="col-span-3">
     {% if film.poster_url %}
     <figure class="w-full">
       <img src="https://{{film.poster_url}}"
@@ -14,7 +14,7 @@
     {% endif %}
   </div>
 
-  <div id="information-col" class="col-span-3">
+  <div id="information-col" class="col-span-5">
     <section id="item-details">
       <h1 class="text-3xl">
 	{{film.title}}
