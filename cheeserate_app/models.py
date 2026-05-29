@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.db.models import Case, When
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now
 
@@ -141,28 +142,41 @@ class TraktItemCommon(TraktCommon):
 
     @staticmethod
     def get_directors(res: dict):
-        directing = res.get('crew').get('directing')
-        if directing is None:
-            return [ ]
-        return [
-            Crew.get_or_shallow_create(
+        directing = res.get('crew').get('directing') or []
+        targets = [
+            (
                 director.get('person').get('ids').get('slug'),
                 director.get('person').get('name'),
                 (director.get('images').get('headshot') or [None])[0],
             ) for director in directing
             if 'Director' in director.get('jobs')
         ]
+        return Crew.bulk_get_or_shallow_create(targets)
 
     @staticmethod
     def get_casts(res: dict):
-        return [
-            (Crew.get_or_shallow_create(
+        casts = res.get('cast') or []
+        targets = [
+            (
                 cast.get('person').get('ids').get('slug'),
                 cast.get('person').get('name'),
                 (cast.get('images').get('headshot') or [None])[0],
-            ), cast.get('characters')) for cast in res.get('cast')
+            ) for cast in casts
         ]
-
+        crews = Crew.bulk_get_or_shallow_create(targets)
+        crews_dict = { }
+        for crew in crews:
+            crews_dict[crew.trakt_slug] = crew
+        cast_characters = [
+            (
+                cast.get('person').get('ids').get('slug'),
+                cast.get('characters')
+            ) for cast in res.get('cast')
+        ]
+        return [
+            (crews_dict[slug], character)
+            for (slug, character) in cast_characters
+        ]
 
 class Film(TraktItemCommon):
     def get_absolute_url(self):
@@ -223,24 +237,22 @@ class Film(TraktItemCommon):
         response.raise_for_status()
         res = response.json()
 
-        updated_count = 0
+        targets = [ ]
         for director in self.get_directors(res):
-            (_, new_added) = CrewDirectedFilm.objects.get_or_create(
-                director=director,
-                film=self,
+            targets.append(
+                (director, self)
             )
-            updated_count += new_added
+        CrewDirectedFilm.bulk_create(targets)
 
-        for (cast, cast_as) in self.get_casts(res):
-            for character in cast_as:
-                (_, new_added) = CrewStarringFilm.objects.get_or_create(
-                    cast=cast,
-                    film=self,
-                    cast_as=character,
+        targets = [ ]
+        for (cast, characters) in self.get_casts(res):
+            for character in characters:
+                targets.append(
+                    (cast, self, character)
                 )
-                updated_count += new_added
+        CrewStarringFilm.bulk_create(targets)
 
-        return updated_count
+        return False
 
     @classmethod
     def create(cls, slug: str):
