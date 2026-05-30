@@ -503,6 +503,9 @@ class CrewDirectedFilm(models.Model):
             ),
         ]
 
+    def __str__(self):
+        return f"{self.director} directed {self.film}"
+
     @classmethod
     def bulk_create(cls, targets: list):
         objs = [ ]
@@ -529,6 +532,9 @@ class CrewStarringFilm(models.Model):
                 name='unique_casting'
             ),
         ]
+
+    def __str__(self):
+        return f"{self.cast} starred {self.film}"
 
     @classmethod
     def bulk_create(cls, targets: list):
