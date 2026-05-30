@@ -10,7 +10,9 @@ Newest Additions:
   {% for film in films %}
   <li>
     <a href="{% url 'film' film.trakt_slug %}"
-       class="text-3xl font-bold underline">{{film}}</a>
+       class="text-3xl font-bold underline text-orange-50">
+      {{film}}
+    </a>
     {% if film.poster_url %}
     <img src="https://{{film.poster_url}}" >
     {% endif %}
