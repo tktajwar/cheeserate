@@ -1,7 +1,15 @@
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
 Newest Additions:
 
 <ul>
-  {% for item in latest_items %}
-  <li> <a href="{{item.get_absolute_url}}">{{item}}</a> </li>
+  {% for film in films %}
+  <li>
+    <a href="{% url 'film' film.trakt_slug %}"
+       class="text-3xl font-bold underline">{{film}}</a>
+    {% if film.poster_url %}
+    <img src="https://{{film.poster_url}}" >
+    {% endif %}
+  </li>
   {% endfor %}
 </ul>

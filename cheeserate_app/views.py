@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.template import loader
 from django.urls import reverse
 from django.utils.html import format_html
+from django.views.generic import ListView
 
 from requests import ConnectionError, HTTPError
 
@@ -11,10 +12,10 @@ from .models import Crew, Film
 
 # Create your views here.
 
-def root(request):
-    latest_items = [ item for item in Film.objects.order_by("-pk") ]
-    context = {"latest_items": latest_items}
-    return render(request, "cheeserate/index.html", context)
+class RootView(ListView):
+    template_name = "cheeserate/index.html"
+    context_object_name = "films"
+    queryset = Film.objects.order_by("-pk")[:10]
 
 def film(request, film_slug):
     try:
