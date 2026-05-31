@@ -37,6 +37,13 @@ class ItemCommon(models.Model):
     class Meta:
         abstract = True
 
+    def avg(self) -> str:
+        avg = self.score_avg
+        if avg > 0:
+            return f"+{avg:.2f}"
+        else:
+            return f"{avg:.2f}"
+
 class TraktCommon(models.Model):
     trakt_slug = models.CharField(unique=True)
     last_fetched = models.DateTimeField(default=ancient_time)
