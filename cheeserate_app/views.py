@@ -42,18 +42,10 @@ def film(request, film_slug):
         )
             for crew in directors
     ])
-    casts = ', '.join([
-        format_html(
-            '<a href="{}" class="underline">{}</a>',
-            crew.get_absolute_url(),
-            crew.name,
-        )
-            for crew in casts
-    ])
     context = {
         "film": film,
         "directors": directors,
-        "casts": casts,
+        "casts": crew_list(casts),
     }
     return render(request, "cheeserate/film_slug.html", context)
 
@@ -98,6 +90,7 @@ def film_list(films):
                 <figure class="w-full">
                   <img src="{}"
                        class="w-full rounded-xs shadow-md" />
+                <figurecaption>{}</figurecaption>
                 </figure>
               </a>
             </div>
@@ -105,6 +98,29 @@ def film_list(films):
             f"{film.title} ({film.year})",
             film.get_absolute_url(),
             f"https://{film.poster_url}",
+            film.title,
         )
         for film in films
+    ])
+
+def crew_list(crews):
+    return '\n'.join([
+        format_html(
+            '''
+            <div title="{}">
+              <a href="{}">
+                <figure class="w-full">
+                  <img src="{}"
+                       class="w-full rounded-xs shadow-md" />
+                  <figurecaption>{}</figurecaption>
+                </figure>
+              </a>
+            </div>
+            ''',
+            crew.name,
+            crew.get_absolute_url(),
+            f"https://{crew.headshot_url}",
+            crew.name,
+        )
+        for crew in crews
     ])

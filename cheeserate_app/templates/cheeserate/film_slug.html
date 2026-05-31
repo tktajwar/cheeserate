@@ -5,7 +5,7 @@
 {% block content %}
 
 <div id="page-wrapper"
-     class="grid grid-cols-8 gap-8 max-w-4xl m-auto px-4">
+     class="grid grid-cols-8 gap-8 max-w-6xl m-auto px-4">
   <div id="details-col" class="col-span-3">
     {% if film.poster_url %}
     <figure class="w-full">
@@ -40,13 +40,14 @@
 
   <div id="crew-col" class="col-span-5">
     {% if casts %}
-    <section id="cast-list">
+    <section id="casts">
       <h2 class="text-2xl">
 	Starring
       </h2>
-      <p>
+      <div id="casts-list"
+	   class="grid lg:grid-cols-5 grid-cols-3 gap-1">
 	{{casts|safe}}
-      </p>
+      </div>
     </section>
     {% endif %}
   </div>
