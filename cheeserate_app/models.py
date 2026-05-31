@@ -44,6 +44,13 @@ class ItemCommon(models.Model):
         else:
             return f"{avg:.2f}"
 
+    def sum(self) -> str:
+        sum_ = self.score_sum
+        if sum_ > 0:
+            return f"+{sum_:.2f}"
+        else:
+            return f"{sum_:.2f}"
+
 class TraktCommon(models.Model):
     trakt_slug = models.CharField(unique=True)
     last_fetched = models.DateTimeField(default=ancient_time)
