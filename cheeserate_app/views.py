@@ -79,25 +79,32 @@ def crew(request, crew_slug):
         print(crew.update_if_appropriate())
     except ConnectionError:
         pass
-    directing = ', '.join([
-        format_html(
-            '<a href="{}" class="underline">{}</a>',
-            reverse('film', args=[film.trakt_slug]),
-            str(film),
-        )
-            for film in directed_films
-    ])
-    starring = ', '.join([
-        format_html(
-            '<a href="{}" class="underline">{}</a>',
-            reverse('film', args=[film.trakt_slug]),
-            str(film),
-        )
-            for film in starring_films
-    ])
     context = {
         "crew": crew,
-        "directing": directing,
-        "starring": starring,
+        "directed_films": film_list(directed_films),
+        "starring_films": film_list(starring_films),
     }
     return render(request, "cheeserate/crew_slug.html", context)
+
+
+# Helper functions
+
+def film_list(films):
+    return '\n'.join([
+        format_html(
+            '''
+            <div title="{}">
+              <a href="{}">
+                <figure class="w-full">
+                  <img src="{}"
+                       class="w-full rounded-xs shadow-md" />
+                </figure>
+              </a>
+            </div>
+            ''',
+            f"{film.title} ({film.year})",
+            film.get_absolute_url(),
+            f"https://{film.poster_url}",
+        )
+        for film in films
+    ])

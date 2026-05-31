@@ -40,25 +40,27 @@
   <div id="discography-col" class="col-span-5">
 
     <div class="max-w-4xl m-auto px-4">
-      {% if directing %}
-      <section id="starring-list">
+      {% if directed_films %}
+      <section id="directing">
 	<h2 class="text-2xl">
 	  Films directed by {{crew.name}}
 	</h2>
-	<p>
-	  {{directing|safe}}
-	</p>
+	<div id="directing-list"
+	     class="grid lg:grid-cols-5 grid-cols-3 gap-1">
+	  {{directed_films|safe}}
+	</div>
       </section>
       {% endif %}
 
-      {% if starring %}
-      <section id="starring-list">
+      {% if starring_films %}
+      <section id="starring">
 	<h2 class="text-2xl">
 	  Films starring {{crew.name}}
 	</h2>
-	<p>
-	  {{starring|safe}}
-	</p>
+	<div id="starring-list"
+	     class="grid lg:grid-cols-5 md:grid-cols-3 gap-1">
+	  {{starring_films|safe}}
+	</div>
       </section>
       {% endif %}
     </div>
