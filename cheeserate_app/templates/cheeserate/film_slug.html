@@ -8,13 +8,23 @@
      class="grid grid-cols-8 gap-8 max-w-6xl m-auto px-4">
   <div id="details-col" class="col-span-3">
     {% if film.poster_url %}
-    <figure class="w-full">
-      <img src="https://{{film.poster_url}}"
-	   class="
-		  w-full rounded-md
-		  shadow-md
-		  ">
-    </figure>
+    <div>
+      <figure
+	class="w-full after:content-['{{film.avg}}_AVG']
+	       relative z-1
+	       after:absolute after:bg-blue-300
+	       after:px-2 after:py-1 after:text-neutral-800
+	       after:top-3 after:-left-1 after:shadow-md
+	       after:rounded-r-md after:text-xs
+	       after:border-solid after:border-1
+	       ">
+	<img src="https://{{film.poster_url}}"
+	     class="
+		    w-full rounded-md
+		    shadow-md z-2
+		    ">
+      </figure>
+    </div>
     {% endif %}
     <section id="item-details">
       <h1 class="text-3xl text-center underline text-orange-50">
