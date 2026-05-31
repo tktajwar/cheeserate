@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import Case, When
@@ -19,12 +20,6 @@ def ancient_time() -> datetime:
     return datetime(1990,1,1,0,0,0, tzinfo=timezone.utc)
 
 # Create your models here.
-
-class User(models.Model):
-    username = models.CharField(max_length=64, unique=True)
-
-    def __str__(self):
-        return self.username
 
 class ItemCommon(models.Model):
     score_avg = models.FloatField(
