@@ -2,7 +2,6 @@ from django.http import Http404, HttpResponseServerError
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.template import loader
-from django.urls import reverse
 from django.utils.html import format_html
 from django.views.generic import ListView
 
@@ -38,7 +37,7 @@ def film(request, film_slug):
     directors = ', '.join([
         format_html(
             '<a href="{}" class="underline">{}</a>',
-            reverse('crew', args=[crew.trakt_slug]),
+            crew.get_absolute_url(),
             crew.name,
         )
             for crew in directors
@@ -46,7 +45,7 @@ def film(request, film_slug):
     casts = ', '.join([
         format_html(
             '<a href="{}" class="underline">{}</a>',
-            reverse('crew', args=[crew.trakt_slug]),
+            crew.get_absolute_url(),
             crew.name,
         )
             for crew in casts

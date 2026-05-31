@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import Case, When
+from django.urls import reverse
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now
 
@@ -143,7 +144,7 @@ class TraktItemCommon(TraktCommon, ItemCommon):
 
 class Film(TraktItemCommon):
     def get_absolute_url(self):
-        return f"/films/{self.trakt_slug}"
+        return reverse('film', args=[self.trakt_slug])
 
     def update_info(self) -> bool:
         url = f"https://api.trakt.tv/movies/{self.trakt_slug}/"
@@ -290,7 +291,7 @@ class Crew(TraktCommon):
         return self.name
 
     def get_absolute_url(self):
-        return f"/crew/{self.trakt_slug}"
+        return reverse('crew', args=[self.trakt_slug])
 
     def update_info(self) -> bool:
         url = f"https://api.trakt.tv/people/{self.trakt_slug}/"
