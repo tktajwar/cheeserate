@@ -4,20 +4,18 @@
 
 {% block content %}
 
-Newest Additions:
-
-<ul>
-  {% for film in films %}
-  <li>
-    <a href="{% url 'film' film.trakt_slug %}"
-       class="text-3xl font-bold underline text-orange-50">
-      {{film}}
-    </a>
-    {% if film.poster_url %}
-    <img src="{{film.img}}" >
-    {% endif %}
-  </li>
-  {% endfor %}
-</ul>
+{% if films %}
+<div id="newly-added" class="max-w-6xl m-auto p-4">
+  <section id="newly-added-films">
+    <h2 class="text-2xl">
+      Newly Added Films
+    </h2>
+    <div id="films-list"
+	 class="grid lg:grid-cols-6 grid-cols-4 gap-1">
+      {{films|safe}}
+    </div>
+  </section>
+</div>
+{% endif %}
 
 {% endblock %}

@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.template import loader
 from django.utils.html import format_html
-from django.views.generic import ListView
+from django.views import View
 
 from requests import ConnectionError, HTTPError
 
@@ -11,10 +11,12 @@ from .models import Crew, Film
 
 # Create your views here.
 
-class RootView(ListView):
+class RootView(View):
     template_name = "cheeserate/index.html"
-    context_object_name = "films"
-    queryset = Film.objects.order_by("-pk")[:10]
+
+    def get(self, request):
+        films = film_list(Film.objects.order_by('-pk')[:12])
+        return render(request, self.template_name, {"films": films})
 
 def film(request, film_slug):
     try:
