@@ -129,3 +129,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 load_dotenv(find_dotenv())
 
 TRAKT_API = os.environ['TRAKT_API']
+
+# Registration
+
+LOGIN_REDIRECT_URL = 'root'

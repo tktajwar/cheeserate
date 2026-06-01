@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth import authenticate, login
 from django.http import Http404, HttpResponseServerError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -22,7 +23,7 @@ class RootView(View):
 
 
 class RegisterView(View):
-    template_name = 'cheeserate/register.html'
+    template_name = 'registration/register.html'
 
     def get(self, request):
         form = UserRegisterationForm()
@@ -36,7 +37,13 @@ class RegisterView(View):
         if form.is_valid():
             form.save()
             username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password1')
             messages.success(request, f"{username} account created.")
+            new_user = authenticate(
+                username=username,
+                password=password,
+            )
+            login(request, new_user)
             return redirect('root')
         messages.error(request, "Account creation failed.")
         context = {
