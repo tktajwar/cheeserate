@@ -97,7 +97,7 @@ def film_list(films):
             ''',
             f"{film.title} ({film.year})",
             film.get_absolute_url(),
-            f"https://{film.poster_url}",
+            film.img(),
             film.title,
         )
         for film in films
@@ -119,7 +119,7 @@ def crew_list(crews):
             ''',
             crew.name,
             crew.get_absolute_url(),
-            f"https://{crew.headshot_url}",
+            crew.img(),
             crew.name,
         )
         for crew in crews
