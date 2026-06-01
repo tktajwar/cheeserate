@@ -1,0 +1,31 @@
+{% extends "cheeserate/base.html" %}
+
+{% block title %} Cheeserate - Register {% endblock %}
+
+{% block content %}
+
+<div class="max-w-4xl m-auto p-4 border">
+  <h2 class="text-2xl">Register to Cheeserate</h2>
+  <form method="POST">
+    {% csrf_token %}
+    <fieldset class="form-group">
+      {{form.as_p}}
+    </fieldset>
+    <div class="form-group">
+      <button
+	class="text-neutral-950 bg-neutral-100 rounded-md p-1
+	       m-1"
+	type="submit">
+	Register
+      </button>
+    </div>
+  </form>
+  <div class="border-top pt-3">
+    <small>
+      Already have an account?
+      <a href="/signin"class="underline">Sign in</a> instead.
+    </small>
+  </div>
+</div>
+
+{% endblock %}

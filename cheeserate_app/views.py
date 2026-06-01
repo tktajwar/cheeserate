@@ -1,6 +1,8 @@
+from django.contrib import messages
+from django.contrib.auth.forms import UserCreationForm
 from django.http import Http404, HttpResponseServerError
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.template import loader
 from django.utils.html import format_html
 from django.views import View
@@ -17,6 +19,26 @@ class RootView(View):
     def get(self, request):
         films = film_list(Film.objects.order_by('-pk')[:12])
         return render(request, self.template_name, {"films": films})
+
+
+class RegisterView(View):
+    template_name = 'cheeserate/register.html'
+
+    def get(self, request):
+        form = UserCreationForm()
+        context = {
+            "form": form,
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request):
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            messages.success(request, "Account created")
+            return redirect('root')
+        messages.error(request, "Account creation failed")
+        return redirect('register')
 
 def film(request, film_slug):
     try:
