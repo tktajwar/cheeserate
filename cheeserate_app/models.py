@@ -13,7 +13,7 @@ import requests
 
 # Item update constants
 
-INITIAL_INTERVAL_HOUR = 6
+INITIAL_INTERVAL_HOUR = 12
 MAX_INTERVAL_HOUR = 576
 INTERVAL_MULTIPLIER = 2
 
