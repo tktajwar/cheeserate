@@ -80,6 +80,9 @@ class TraktItemCommon(TraktCommon, ItemCommon):
     def __str__(self):
         return f"{self.title} ({self.year})"
 
+    def img(self):
+        return f"https://{self.poster_url}"
+
     def update_if_appropriate(self) -> bool:
         updated = False
         if now() > self.next_fetch:
@@ -306,6 +309,9 @@ class Crew(TraktCommon):
 
     def get_absolute_url(self):
         return reverse('crew', args=[self.trakt_slug])
+
+    def img(self):
+        return f"https://{self.headshot_url}"
 
     def update_info(self) -> bool:
         url = f"https://api.trakt.tv/people/{self.trakt_slug}/"
