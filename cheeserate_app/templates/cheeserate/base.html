@@ -4,6 +4,15 @@
     <title> {% block title %} Untitled | Cheeserate {% endblock %} </title>
   </head>
   <body class="text-neutral-300 bg-zinc-900">
+    {% if messages %}
+    <div id="messages" class="max-w-4xl m-auto p-2 border">
+      {% for message in messages %}
+      <div class="alert alert-{{message.tags}}">
+	{{message}}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
     {% block content %}{% endblock %}
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   </body>
