@@ -1,5 +1,4 @@
 from django.contrib import messages
-from django.contrib.auth.forms import UserCreationForm
 from django.http import Http404, HttpResponseServerError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -9,6 +8,7 @@ from django.views import View
 
 from requests import ConnectionError, HTTPError
 
+from .forms import UserRegisterationForm
 from .models import Crew, Film
 
 # Create your views here.
@@ -25,20 +25,24 @@ class RegisterView(View):
     template_name = 'cheeserate/register.html'
 
     def get(self, request):
-        form = UserCreationForm()
+        form = UserRegisterationForm()
         context = {
             "form": form,
         }
         return render(request, self.template_name, context)
 
     def post(self, request):
-        form = UserCreationForm(request.POST)
+        form = UserRegisterationForm(request.POST)
         if form.is_valid():
+            form.save()
             username = form.cleaned_data.get('username')
-            messages.success(request, "Account created")
+            messages.success(request, f"{username} account created.")
             return redirect('root')
-        messages.error(request, "Account creation failed")
-        return redirect('register')
+        messages.error(request, "Account creation failed.")
+        context = {
+            "form": form,
+        }
+        return render(request, self.template_name, context)
 
 def film(request, film_slug):
     try:
