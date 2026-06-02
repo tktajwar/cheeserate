@@ -389,18 +389,12 @@ class Crew(TraktCommon):
         CrewDirectedFilm.bulk_create(targets)
 
         targets = [ ]
-        for movie_dir in  res.get('cast'):
-            movie = movie_dir.get('movie')
+        for movie_cast in  res.get('cast'):
+            movie = movie_cast.get('movie')
             film_slug = movie.get('ids').get('slug')
             title = movie.get('title')
             year = movie.get('year')
             poster_url = (movie.get('images').get('poster') or [None])[0]
-            film = Film.get_or_shallow_create(
-                film_slug,
-                title,
-                year,
-                poster_url,
-            )
             targets.append(
                 (film_slug, title, year, poster_url)
             )
