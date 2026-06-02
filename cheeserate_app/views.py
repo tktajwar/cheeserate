@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
+from django.contrib.auth import logout
 from django.http import Http404, HttpResponseServerError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -50,6 +51,10 @@ class RegisterView(View):
             "form": form,
         }
         return render(request, self.template_name, context)
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
 
 def film(request, film_slug):
     try:
