@@ -1,0 +1,61 @@
+<div id="navbar"
+     class="flex max-w-4xl
+	    m-auto p-1">
+  <div>
+    <a class="underline"
+       href="/">
+      Cheeserate
+    </a>
+  </div>
+  
+
+  <nav class="flex justify-end gap-5 flex-1
+	      max-w-5xl p-1 m-auto">
+    <div>
+      <a class="underline"
+	 href="#">
+	Films
+      </a>
+    </div>
+    <div>
+      <a class="underline"
+	 href="#">
+	Shows
+      </a>
+    </div>
+    <div>
+      <a class="underline"
+	 href="#">
+	Games
+      </a>
+    </div>
+    <div>
+      <a class="underline"
+	 href="#">
+	Books
+      </a>
+    </div>
+    {% if user.is_authenticated %}
+    <div>
+      <a
+	 href="#">
+	{{user}}
+      </a>
+    </div>
+    {% else %}
+    <div>
+      <a class="underline"
+	 href="/login/">
+	Login
+      </a>
+    </div>
+    <div>
+      <a class="underline"
+	 href="/register/">
+	Register
+      </a>
+    </div>
+    {% endif %}
+  </nav>
+
+</div>
