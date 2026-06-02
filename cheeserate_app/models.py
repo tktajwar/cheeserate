@@ -562,6 +562,28 @@ class CrewStarringFilm(models.Model):
         )
 
 
+class UserRatingFilm(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    film = models.ForeignKey(Film, on_delete=models.CASCADE)
+    rating = models.FloatField(
+        validators=[
+            MinValueValidator(-1.0),
+            MaxValueValidator(+1.0),
+        ],
+    )
+    review = models.CharField(null=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'film'],
+                name='unique_rating'
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.user}'s rating of {self.film}"
+
 # Helper functions
 
 def clean_slug(slug: str) -> str:
