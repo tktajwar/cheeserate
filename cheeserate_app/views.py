@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponseServerError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -52,6 +53,7 @@ class RegisterView(View):
         }
         return render(request, self.template_name, context)
 
+@login_required
 def logout_view(request):
     logout(request)
     return redirect('login')

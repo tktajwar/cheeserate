@@ -133,3 +133,4 @@ TRAKT_API = os.environ['TRAKT_API']
 # Registration
 
 LOGIN_REDIRECT_URL = 'root'
+LOGIN_URL = 'login'
