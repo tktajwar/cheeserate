@@ -58,38 +58,40 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-def film(request, film_slug):
-    try:
-        film = Film.get_or_create_by_slug(film_slug)
-        directors = Crew.objects.filter(crewdirectedfilm__film=film)
-        casts = Crew.objects.filter(crewstarringfilm__film=film)
-    except HTTPError as e:
-        if e.response.status_code == 404:
-            raise Http404("Film does not exist")
-        else:
+class FilmView(View):
+    def get(self, request, *args, **kwargs):
+        film_slug = kwargs['film_slug']
+        try:
+            film = Film.get_or_create_by_slug(film_slug)
+            directors = Crew.objects.filter(crewdirectedfilm__film=film)
+            casts = Crew.objects.filter(crewstarringfilm__film=film)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise Http404("Film does not exist")
+            else:
+                print(e)
+                return HttpResponseServerError()
+        except ConnectionError as e:
             print(e)
-            return HttpResponseServerError()
-    except ConnectionError as e:
-        print(e)
-        return HttpResponseServerError("Connection error. API call failed.")
-    try:
-        print(film.update_if_appropriate())
-    except ConnectionError:
-        pass
-    directors = ', '.join([
-        format_html(
-            '<a href="{}" class="underline">{}</a>',
-            crew.get_absolute_url(),
-            crew.name,
-        )
+            return HttpResponseServerError("Connection error. API call failed.")
+        try:
+            print(film.update_if_appropriate())
+        except ConnectionError:
+            pass
+        directors = ', '.join([
+            format_html(
+                '<a href="{}" class="underline">{}</a>',
+                crew.get_absolute_url(),
+                crew.name,
+            )
             for crew in directors
-    ])
-    context = {
-        "film": film,
-        "directors": directors,
-        "casts": crew_list(casts),
-    }
-    return render(request, "cheeserate/film_slug.html", context)
+        ])
+        context = {
+            "film": film,
+            "directors": directors,
+            "casts": crew_list(casts),
+        }
+        return render(request, "cheeserate/film_slug.html", context)
 
 def crew(request, crew_slug):
     try:

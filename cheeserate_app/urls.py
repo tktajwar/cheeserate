@@ -8,6 +8,6 @@ urlpatterns = [
     path("register/", views.RegisterView.as_view(), name="register"),
     path("login/", auth_views.LoginView.as_view(), name="login"),
     path("logout/", views.logout_view, name="logout"),
-    path("films/<str:film_slug>/", views.film, name="film"),
+    path("films/<str:film_slug>/", views.FilmView.as_view(), name="film"),
     path("c/<str:crew_slug>/", views.crew, name="crew"),
 ]
