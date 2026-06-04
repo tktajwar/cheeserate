@@ -4,7 +4,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponseServerError
 from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template import loader
 from django.utils.html import format_html
 from django.views import View
@@ -12,7 +12,7 @@ from django.views import View
 from requests import ConnectionError, HTTPError
 
 from .forms import UserRegisterationForm
-from .models import Crew, Film
+from .models import Crew, Film, UserRatingFilm
 
 # Create your views here.
 
@@ -92,6 +92,24 @@ class FilmView(View):
             "casts": crew_list(casts),
         }
         return render(request, "cheeserate/film_slug.html", context)
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return HttpResponse(status=401)
+
+        film_slug = kwargs['film_slug']
+        film = get_object_or_404(Film, trakt_slug=film_slug)
+
+        UserRatingFilm.objects.update_or_create(
+            user = request.user,
+            film = film,
+            defaults = {
+                'rating': float(request.POST.get('rating')),
+                'review': request.POST.get('review') or None,
+            },
+        )
+
+        return HttpResponse(status=200)
 
 def crew(request, crew_slug):
     try:
