@@ -29,7 +29,8 @@ number.oninput = function() {
 
 number.onblur = function() {
     const n = rateNum(number.value);
-    if (n >= 1) number.value = 1
-    else if (n <= -1) number.value = -1
+    if (n > 1) number.value = '+1'
+    else if (n < -1) number.value = '-1'
     else if (n == 0) number.value = 0;
+    else number.value = formatNum(n);
 }
