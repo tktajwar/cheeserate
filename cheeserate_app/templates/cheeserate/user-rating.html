@@ -1,0 +1,54 @@
+<section id="user-rating" class="w-full max-w-2xl m-auto">
+  {% if user.is_authenticated %}
+  <h2 class="text-xl">
+    Your review
+  </h2>
+  <form method="POST">
+    {% csrf_token %}
+    <div class="w-full">
+      <div class="items-center flex justify-center">
+	<input name="rating" type="text" min="-1.0" max="1.0"
+	       id="rateNum" required
+	       inputmode="numeric" placeholder="0"
+	       pattern="^[\+\-]?[0-9]?\.?[0-9]+$"
+	       class="border rounded-md
+		      -40 text-center text-4xl
+		      font-extrabold text-indigo-600
+		      bg-transparent border-0 focus:outline-none
+		      focus:ring-0" />
+      </div>
+      <div class="items-center flex justify-center">
+	<input type="range" min="-1.0" max="1.0"
+	       step="0.1" id="rateRange"
+	       class="" />
+      </div>
+    </div>
+    <textarea name="review" id="review"
+	      rows="4" cols="40" placeholder="Say something..."
+	      class="w-full"
+	      ></textarea>
+    <br />
+    <button
+      class="text-neutral-950 bg-neutral-100 rounded-md p-1
+	     m-1"
+      type="submit">
+      Submit
+    </button>
+  </form>
+  {% else %}
+  <p class="text-center m-1">
+    Please
+    <a href="{% url 'login' %}?next={{ request.path }}"
+       class="underline">
+      login
+    </a> or <a href="{% url 'register' %}?next={{request.path }}"
+      class="underline"> register
+    </a> to place your review.
+  </p>
+  {% endif %}
+</section>
+
+{% if user.is_authenticated %}
+{% load static %}
+<script src="{% static "cheeserate/rating.js" %}"></script>
+{% endif %}
