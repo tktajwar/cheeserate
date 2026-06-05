@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.db.models import Avg, Sum
 from django.db.models import Case, When
 from django.urls import reverse
 from django.utils.dateparse import parse_datetime
@@ -36,20 +37,6 @@ class ItemCommon(models.Model):
 
     class Meta:
         abstract = True
-
-    def avg(self) -> str:
-        avg = self.score_avg
-        if avg > 0:
-            return f"+{avg:.2f}"
-        else:
-            return f"{avg:.2f}"
-
-    def sum(self) -> str:
-        sum_ = self.score_sum
-        if sum_ > 0:
-            return f"+{sum_:.2f}"
-        else:
-            return f"{sum_:.2f}"
 
 class TraktCommon(models.Model):
     trakt_slug = models.CharField(unique=True)
@@ -162,6 +149,25 @@ class TraktItemCommon(TraktCommon, ItemCommon):
 class Film(TraktItemCommon):
     def get_absolute_url(self):
         return reverse('film', args=[self.trakt_slug])
+
+    def avg(self) -> str:
+        avg_ = UserRatingFilm.objects.filter(film=self).aggregate(
+            Avg('rating')
+        ).get('rating__avg') or 0.0
+        if avg_ > 0:
+            return f"+{avg_:.2f}"
+        else:
+            return f"{avg_:.2f}"
+
+    def sum(self) -> str:
+        sum_ = UserRatingFilm.objects.filter(film=self).aggregate(
+            Sum('rating')
+        ).get('rating__sum') or 0.0
+
+        if sum_ > 0:
+            return f"+{sum_:.2f}"
+        else:
+            return f"{sum_:.2f}"
 
     def update_info(self) -> bool:
         url = f"https://api.trakt.tv/movies/{self.trakt_slug}/"
