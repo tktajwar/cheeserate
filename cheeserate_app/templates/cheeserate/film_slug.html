@@ -19,8 +19,9 @@
       </figure>
     </div>
     {% endif %}
+    {% include "cheeserate/user-stats.html" with item=film %}
     <section id="item-details">
-      <h1 class="text-3xl text-center underline text-orange-50">
+      <h1 class="text-3xl text-center underline text-orange-50 p-1">
 	{{film.title}}
       </h1>
 
